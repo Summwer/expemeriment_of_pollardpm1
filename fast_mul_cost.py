@@ -5,6 +5,8 @@ import numpy
 from scipy import optimize
 
 
+plt.style.available
+
 def f_nm(x, A, B):
     return A * 4**(x) + B #*(x**2) 
 
@@ -21,13 +23,19 @@ def compute_R2(actual,predict):
 ls = [21, 22, 23, 24, 25, 26]
 nms = [2.3, 10.22, 42.07, 142.46, 605.49, 2378.83]
 fms = [0.07, 0.19, 0.6, 0.96, 2.55, 4.27]
+
+normalization = 4025512261.28 
+
+sim_fms = [385402980.57, 844735175.80, 1868372883.75, 4096984655.01, 7522152796.44, 16524178779.69 ]
+sim_fms = [x/normalization for x in sim_fms]
     
 with plt.style.context(['science','ieee']):
     fig, ax = plt.subplots(figsize=(4,3),dpi=600)   
     
   
     ax.scatter(ls, nms, label='normal_mul cost',color = "orange", marker='.', zorder=4)
-    ax.scatter(ls, fms, label='fast_mul cost',color = "red", marker='*', zorder=3)
+    ax.scatter(ls, fms, label='fast_mul cost',color = "red", marker='*', zorder=2)
+    ax.scatter(ls, sim_fms, label='normalized fast_mul cost estimator',color = "blue", marker='*', zorder=3)
     
     
     A1, B1= optimize.curve_fit(f_nm, ls, nms)[0] 

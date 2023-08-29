@@ -6,13 +6,11 @@
 
 
 void mpz_inits(mpz_t a, mpz_t P, mpz_t res, mpz_t tmp, mpz_t q){
-
     mpz_init(a);
     mpz_init(P);
     mpz_init(tmp);
     mpz_init(res);
     mpz_init(q);
-
 }
 
 // void mpz_clears(mpz_t a, mpz_t P, mpz_t res, mpz_t tmp, mpz_t q){
@@ -133,11 +131,7 @@ void pollard_pm1_Pol74(mpz_t N, int bits, ll L, ll M, bool verbose){
     //     Primes[i] = PrimeList[i];
     // }
 
-
-
-
-
-    mpz_t a,b,P,res;
+    mpz_t a,b,P,res;//
     
     mpz_init(a);
     mpz_init(b);
@@ -158,14 +152,19 @@ void pollard_pm1_Pol74(mpz_t N, int bits, ll L, ll M, bool verbose){
         mpz_set(b,a);
         for (int i = 0;i< LCntPrime;i++) {
             prime = PrimeList[i];
-            ind= std::floor(log2(PrimeList[LCntPrime-1])/log2(prime));//e = logB/logp
+            ind= bits/2/log2(prime);//e = logB/logp
             mpz_ui_pow_ui(P,prime,ind); //P=p^e
             mpz_powm(b,b,P,N); //a=a^P(mod N)
             mpz_sub_ui(res,b,1);
             mpz_gcd(res,res,N);
 
             if(verbose){
-                printf("\r %5d/%10lld", i, LCntPrime);
+                printf("\r ind = %3d, %10lld/%10lld", ind, PrimeList[i], PrimeList[LCntPrime-1]);
+            }
+            if(mpz_cmp_ui(res,1)!=0){
+                print_res(N, res);
+                cout<<endl;
+                return;
             }
         }
         if( mpz_cmp(res,N)==0)
@@ -182,8 +181,6 @@ void pollard_pm1_Pol74(mpz_t N, int bits, ll L, ll M, bool verbose){
         if(MCntPrime > LCntPrime){
             ll p0 = PrimeList[LCntPrime-1], tmpDelta, Delta = 0;
 
-            
-    
             for(int i = LCntPrime ; i < MCntPrime; i++){
                 ll prime = PrimeList[i];
                 tmpDelta = (prime - p0)/2;
@@ -202,7 +199,6 @@ void pollard_pm1_Pol74(mpz_t N, int bits, ll L, ll M, bool verbose){
                 mpz_init(aList[i]);
                 mpz_powm_ui(aList[i],a,2*(i+1),N);
             }
-
 
             p0 = PrimeList[LCntPrime-1];
             mpz_powm_ui(b,b,p0,N);
@@ -223,6 +219,7 @@ void pollard_pm1_Pol74(mpz_t N, int bits, ll L, ll M, bool verbose){
                 //     throw "";
                 if(mpz_cmp_ui(res,1)!=0){
                     print_res(N, res);
+                    delete [] aList;
                     return;
                 }
                 p0 = prime;
@@ -464,6 +461,7 @@ void pollard_pm1_improved_IPP1_V2(mpz_t N, int bits, ll MaxInt, bool fm, bool ve
     for(int i = 0; i < CntPrime; i++){
         Primes[i] = PrimeList[i];
     }
+    delete [] PrimeList;
 
 
     mpz_t a,P,tmp,res,q;
@@ -485,6 +483,7 @@ Narrow_prime_set:
         Z_NR<mpz_t> tmpP = normal_mul(Primes);
         tmpP.get_mpz(P);
     }
+    Primes.clear();
 
     gmp_randstate_t grt;
     gmp_randinit_default(grt);
@@ -548,24 +547,26 @@ Narrow_prime_set:
 
 
 
-void generate_partial_primes(vector<Z_NR<mpz_t>> Primes, int k, vector<vector<Z_NR<mpz_t>>> &Partial_Primes){
-    ll CntPrime = Primes.size(), i = 1;
+void generate_partial_primes(vector<Z_NR<mpz_t>> &Primes, int k, vector<vector<Z_NR<mpz_t>>> &Partial_Primes){
+    ll CntPrime = Primes.size(), i = 0;
     Partial_Primes.resize(k+1);
     Partial_Primes[0].resize(1);
     Partial_Primes[0][0] = 2;
-    for(int j = 1; j <= k ; j++){
-        ll D1 = pow(2,pow(2,j-1)), D2 = pow(2,pow(2,j));
-        // cerr<< "log2(D1) = " << D1 << ", log2(D2) = " << D2 <<endl;
-        int Cnt = 0;
-        Partial_Primes.resize(Cnt);
-        for(; i < CntPrime; i++){
-            if(Primes[i] > D2)
+    for(int j = 1; j <= k; j++){
+        double D1 = pow(2,pow(2,j-1)), D2 = pow(2,pow(2,j));
+        cerr<< "D1 = " << D1 << ", D2 = " << D2 <<endl;
+        Partial_Primes[j].resize(0);
+        for(i = 0; i < Primes.size(); i++){
+            if(Primes[i] > D2){
                 break;
-            Cnt++;
-            Partial_Primes[j].resize(Cnt);
-            Partial_Primes[j][Cnt-1] = Primes[i]; 
+            }
         }
+        Partial_Primes[j].insert(Partial_Primes[j].end(),Primes.begin(),Primes.begin()+i);
+        Primes.erase(Primes.begin(),Primes.begin()+i);
+        if(Primes.size()==0)
+            break;
     }
+    Primes.clear();
 }
 
 
@@ -583,13 +584,16 @@ void dynamic_scaling_pollard_pm1(mpz_t N, int bits, ll MaxInt, bool fm, bool ver
 
     vector<Z_NR<mpz_t>> Primes;
     Primes.resize(CntPrime);
+    cout<<"CntPrime = "<<CntPrime<<endl;
     for(int i = 0; i < CntPrime; i++){
         Primes[i] = PrimeList[i];
     }
-
+    delete [] PrimeList;
 
     // ll  D1, D2;
     int k = ceil(log2((double)bits/2));
+
+    cout<<"k = "<<k<<endl;
 
     //Preclassify primes
     vector<vector<Z_NR<mpz_t>>> Partial_Primes;
@@ -599,41 +603,40 @@ void dynamic_scaling_pollard_pm1(mpz_t N, int bits, ll MaxInt, bool fm, bool ver
     Pj2.resize(k+1);
     generate_partial_primes(Primes, k, Partial_Primes);
 
-    // cerr<<"k = "<<k<<endl;
-    
+
     mpz_t a,b,res, n;
     bool initialized;
     Z_NR<mpz_t>  p0, Delta, tmpDelta;
-
-    // unsigned long new_D;
-    // mpz_inits(a, P, res, tmp, q);
-    // mpz_init_set_ui(P,1);
+ 
     mpz_init_set_ui(a,2);
     mpz_init_set_ui(b,4); //b=a^2(mod N)
     mpz_init(res);
     mpz_init(n);
     
     // int prime,p0,Delta=0,ind,i0=0;
-
-    
-
     // gmp_randstate_t grt;
     // gmp_randinit_default(grt);
     // gmp_randseed_ui(grt, clock());
     // mpz_urandomb(a, grt, bits); //Generate a random int from 0 to 2^x-1
 
-    
-    // mpz_powm_ui(b,a,2,N); 
     mpz_sub_ui(res,b,1);
     mpz_gcd(res,res,N); //d=gcd(b-1,N)
     if(mpz_cmp_ui(res,1)!=0){
         print_res(N, res);
+        mpz_clear(a);
+        mpz_clear(b);
+        mpz_clear(res);
+        mpz_clear(n);
+        Partial_Primes.clear();
+        Pj.clear();
+        Pj1.clear();
+        Pj2.clear();
         return;
     }else{
         //set Pj, Pj1, Pj2
         Pj[0] = 2, Pj1[0] = 1, Pj2[0] = 1, Pj1[1] = 2, mpz_set(a,b);
         initialized = false;
-JLOOP:
+JLOOP:  
         for(int j = 1; j <= k ; j++){
             if(not initialized){
                 // D1 = pow(2,pow(2,j-1)), D2 = pow(2,pow(2,j));
@@ -642,6 +645,7 @@ JLOOP:
                         Pj2[j] = fast_mul(Partial_Primes[j]);
                     else
                         Pj2[j] = normal_mul(Partial_Primes[j]);
+                    Partial_Primes[j].clear();
                     Pj[j].mul(Pj1[j],Pj2[j]);
                     Pj1[j+1].mul(Pj1[j],Pj[j]);
                 }
@@ -681,12 +685,28 @@ JLOOP:
                             mpz_gcd(res,res,N);
                             if(mpz_cmp_ui(res,1)!=0){
                                 print_res(N, res);
+                                mpz_clear(a);
+                                mpz_clear(b);
+                                mpz_clear(res);
+                                mpz_clear(n);
+                                Partial_Primes.clear();
+                                Pj.clear();
+                                Pj1.clear();
+                                Pj2.clear();
                                 return;
                             }
                         }
                     }
                     else if(mpz_cmp(res,N)!=0 and mpz_cmp_ui(res,1)!=0){
                         print_res(N, res);
+                        mpz_clear(a);
+                        mpz_clear(b);
+                        mpz_clear(res);
+                        mpz_clear(n);
+                        Partial_Primes.clear();
+                        Pj.clear();
+                        Pj1.clear();
+                        Pj2.clear();
                         return;
                     }
                     mpz_set(b,a);
@@ -696,6 +716,14 @@ JLOOP:
                     cout<<endl;
                 if(mpz_cmp(res,N)!=0 and mpz_cmp_ui(res,1)!=0){
                     print_res(N, res);
+                    mpz_clear(a);
+                    mpz_clear(b);
+                    mpz_clear(res);
+                    mpz_clear(n);
+                    Partial_Primes.clear();
+                    Pj.clear();
+                    Pj1.clear();
+                    Pj2.clear();
                     return;
                 }
             }
@@ -770,6 +798,14 @@ JLOOP:
                     goto JLOOP;
                 }
                 print_res(N, res);
+                mpz_clear(a);
+                mpz_clear(b);
+                mpz_clear(res);
+                mpz_clear(n);
+                Partial_Primes.clear();
+                Pj.clear();
+                Pj1.clear();
+                Pj2.clear();
                 return;
             }
             p0 = prime;
@@ -777,6 +813,14 @@ JLOOP:
         if(verbose)
             cerr<<endl;
     }
+    mpz_clear(a);
+    mpz_clear(b);
+    mpz_clear(res);
+    mpz_clear(n);
+    Partial_Primes.clear();
+    Pj.clear();
+    Pj1.clear();
+    Pj2.clear();
     cerr<< "Fail to find the solution"<<endl;
     return;
 }
@@ -799,240 +843,240 @@ int find_index(ll &CntPrime,ll PrimeList[],unsigned long D){
 
 
 
-void dynamic_scaling_pollard_pm1_with_block_partition(mpz_t N, int bits,ll &CntPrime,ll PrimeList[], unsigned long D, int k, int blocksize){
-    printf("=====================================\n");
-    printf("[ours]Test Dynamic Scaling Pollard's P-1 Algorithm with block partition...\n");
-    mpz_t a,P,tmp,res,q;
-    unsigned long new_D;
-    int PPsize = k;
-    mpz_t **PP = new mpz_t*[PPsize];
-    int *Psizes = new int[PPsize];
-    mpz_inits(a, P, res, tmp, q);
-    mpz_set_ui(P,1);
-    mpz_t b,Ptmp;
-    mpz_init(b);
-    mpz_init(Ptmp);
-    int prime,p0,Delta=0,ind,i=0;
+// void dynamic_scaling_pollard_pm1_with_block_partition(mpz_t N, int bits,ll &CntPrime,ll PrimeList[], unsigned long D, int k, int blocksize){
+//     printf("=====================================\n");
+//     printf("[ours]Test Dynamic Scaling Pollard's P-1 Algorithm with block partition...\n");
+//     mpz_t a,P,tmp,res,q;
+//     unsigned long new_D;
+//     int PPsize = k;
+//     mpz_t **PP = new mpz_t*[PPsize];
+//     int *Psizes = new int[PPsize];
+//     mpz_inits(a, P, res, tmp, q);
+//     mpz_set_ui(P,1);
+//     mpz_t b,Ptmp;
+//     mpz_init(b);
+//     mpz_init(Ptmp);
+//     int prime,p0,Delta=0,ind,i=0;
 
-    clock_t start,start_for,end;
-    start=clock();
+//     clock_t start,start_for,end;
+//     start=clock();
 
-    gmp_randstate_t grt;
-    gmp_randinit_default(grt);
-    gmp_randseed_ui(grt, clock());
-    mpz_urandomb(a, grt, bits); //Generate a random int from 0 to 2^x-1
+//     gmp_randstate_t grt;
+//     gmp_randinit_default(grt);
+//     gmp_randseed_ui(grt, clock());
+//     mpz_urandomb(a, grt, bits); //Generate a random int from 0 to 2^x-1
 
-    mpz_powm_ui(b,a,2,N); //b=a^2(mod N)
-    mpz_sub_ui(tmp,b,1);
-    mpz_gcd(res,tmp,N); //d=gcd(b-1,N)
-    if(mpz_cmp_ui(res,1)!=0){
-        if(mpz_cmp(res,N)==0){
-            //return gcd(a+1,N)
-            mpz_add_ui(tmp,a,1);
-            mpz_gcd(res,tmp,N);
-            print_res(N, res);
-        }
-        else{
-            print_res(N, res);
-        }
-    }
-    else{
-        // mpz_sqrt(tmp,N);
-        // mpz_sub_ui(tmp,tmp,1);
-        // mpz_cdiv_q_ui(tmp, tmp,2);
-        // mpz_root(tmp,tmp,k); //(tmp)^(1/k)
-        // D = mpz_get_ui(tmp);
-        double lD = log2(D);
-        std::cerr<<"D = "<<D<<std::endl;
+//     mpz_powm_ui(b,a,2,N); //b=a^2(mod N)
+//     mpz_sub_ui(tmp,b,1);
+//     mpz_gcd(res,tmp,N); //d=gcd(b-1,N)
+//     if(mpz_cmp_ui(res,1)!=0){
+//         if(mpz_cmp(res,N)==0){
+//             //return gcd(a+1,N)
+//             mpz_add_ui(tmp,a,1);
+//             mpz_gcd(res,tmp,N);
+//             print_res(N, res);
+//         }
+//         else{
+//             print_res(N, res);
+//         }
+//     }
+//     else{
+//         // mpz_sqrt(tmp,N);
+//         // mpz_sub_ui(tmp,tmp,1);
+//         // mpz_cdiv_q_ui(tmp, tmp,2);
+//         // mpz_root(tmp,tmp,k); //(tmp)^(1/k)
+//         // D = mpz_get_ui(tmp);
+//         double lD = log2(D);
+//         std::cerr<<"D = "<<D<<std::endl;
 
-        int D_index = find_index(CntPrime, PrimeList, D);
-        int pD_index = 0;
+//         int D_index = find_index(CntPrime, PrimeList, D);
+//         int pD_index = 0;
         
-        Psizes[0] = int(ceil((D_index-pD_index)/float(blocksize))); // |B \cap D|/blocksize
-        PP[0] = new mpz_t[Psizes[0]];
-        int s = -1;
+//         Psizes[0] = int(ceil((D_index-pD_index)/float(blocksize))); // |B \cap D|/blocksize
+//         PP[0] = new mpz_t[Psizes[0]];
+//         int s = -1;
 
-        //Multiply all primes in range of [0,D]
-        printf("Multiply all primes in range of [0,%lu) with blockwise partition.\n", D);
-        for(i=0;i<=D_index;i++) {
-            if(i%blocksize==0){
-                s++;
-                mpz_init_set_ui(PP[0][s],1);
-            }
-            prime = PrimeList[i];
-            ind= std::ceil(lD/log2(prime));//e = logD/logp
-            mpz_ui_pow_ui(tmp,prime,ind); //tmp=p^e
-            mpz_mul(PP[0][s],PP[0][s],tmp); //P=P*tmp
-            if(i % 100000==0 or i == D_index){
-                std::cerr<<"\r "<< i+1 << "/" <<CntPrime<<", cost = "<<(double)(clock()-start_for)/1000/1000<<'s';
-                start_for = clock();
-            }
-        }
-        for(int s = 0; s<Psizes[0]; s++){
-            mpz_set(a,b); //a = b
-            mpz_powm(b,b,PP[0][s],N); //b=b^P(mod N)
-            mpz_sub_ui(tmp,b,1);
-            mpz_gcd(res,tmp,N);
+//         //Multiply all primes in range of [0,D]
+//         printf("Multiply all primes in range of [0,%lu) with blockwise partition.\n", D);
+//         for(i=0;i<=D_index;i++) {
+//             if(i%blocksize==0){
+//                 s++;
+//                 mpz_init_set_ui(PP[0][s],1);
+//             }
+//             prime = PrimeList[i];
+//             ind= std::ceil(lD/log2(prime));//e = logD/logp
+//             mpz_ui_pow_ui(tmp,prime,ind); //tmp=p^e
+//             mpz_mul(PP[0][s],PP[0][s],tmp); //P=P*tmp
+//             if(i % 100000==0 or i == D_index){
+//                 std::cerr<<"\r "<< i+1 << "/" <<CntPrime<<", cost = "<<(double)(clock()-start_for)/1000/1000<<'s';
+//                 start_for = clock();
+//             }
+//         }
+//         for(int s = 0; s<Psizes[0]; s++){
+//             mpz_set(a,b); //a = b
+//             mpz_powm(b,b,PP[0][s],N); //b=b^P(mod N)
+//             mpz_sub_ui(tmp,b,1);
+//             mpz_gcd(res,tmp,N);
             
-            if(mpz_cmp(res,N)==0){//If primes are too many, then we should narrow the set.
-                mpz_set(b,a); // b = a
-                for(int iter = s*blocksize;iter<D_index;iter++) {
-                    prime = PrimeList[iter];
-                    ind= std::ceil(lD/log2(prime));
-                    for(int e=1; e <= ind; e++){
-                        mpz_powm_ui(b,b,prime,N);
-                        mpz_sub_ui(tmp,b,1);
-                        mpz_gcd(res,tmp,N);
-                        if(mpz_cmp_ui(res,1)!=0){
-                            print_res(N, res);
-                            end=clock();
-                            printf("time= %fs. \n",(double)(end-start)/1000/1000);
-                            return;
-                        }
-                    }
-                }
-            }
-            else if(mpz_cmp_ui(res,1)!=0){
-                print_res(N, res);
-                end=clock();
-                printf("time= %fs. \n",(double)(end-start)/1000/1000);
-                return;
-            }
-            else{
-                mpz_set(a,b);
-            }
-        }
-        printf("\n");
+//             if(mpz_cmp(res,N)==0){//If primes are too many, then we should narrow the set.
+//                 mpz_set(b,a); // b = a
+//                 for(int iter = s*blocksize;iter<D_index;iter++) {
+//                     prime = PrimeList[iter];
+//                     ind= std::ceil(lD/log2(prime));
+//                     for(int e=1; e <= ind; e++){
+//                         mpz_powm_ui(b,b,prime,N);
+//                         mpz_sub_ui(tmp,b,1);
+//                         mpz_gcd(res,tmp,N);
+//                         if(mpz_cmp_ui(res,1)!=0){
+//                             print_res(N, res);
+//                             end=clock();
+//                             printf("time= %fs. \n",(double)(end-start)/1000/1000);
+//                             return;
+//                         }
+//                     }
+//                 }
+//             }
+//             else if(mpz_cmp_ui(res,1)!=0){
+//                 print_res(N, res);
+//                 end=clock();
+//                 printf("time= %fs. \n",(double)(end-start)/1000/1000);
+//                 return;
+//             }
+//             else{
+//                 mpz_set(a,b);
+//             }
+//         }
+//         printf("\n");
         
-        //Multiply all primes in range of [D^(2^(j-1)),D^(2^j)]
-        pD_index = D_index;
-        unsigned long previous_D;
-        for(int j = 1; j < k; j++){
-            previous_D = pow(D,pow(2,j-1));
-            new_D = pow(D,pow(2,j));
+//         //Multiply all primes in range of [D^(2^(j-1)),D^(2^j)]
+//         pD_index = D_index;
+//         unsigned long previous_D;
+//         for(int j = 1; j < k; j++){
+//             previous_D = pow(D,pow(2,j-1));
+//             new_D = pow(D,pow(2,j));
 
-            D_index = find_index(CntPrime, PrimeList, new_D);
-            Psizes[j] = int(ceil((D_index-pD_index)/float(blocksize))); // |B \cap D|/blocksize
-            PP[j] = new mpz_t[Psizes[j]];
-            s = -1;
+//             D_index = find_index(CntPrime, PrimeList, new_D);
+//             Psizes[j] = int(ceil((D_index-pD_index)/float(blocksize))); // |B \cap D|/blocksize
+//             PP[j] = new mpz_t[Psizes[j]];
+//             s = -1;
 
-            printf("\nj = %d, D^(2^%d) = %lu, max(prime)= %lld \n",j,j,new_D,PrimeList[CntPrime-1]);
+//             printf("\nj = %d, D^(2^%d) = %lu, max(prime)= %lld \n",j,j,new_D,PrimeList[CntPrime-1]);
 
-            printf("Multiply all primes in range of [%lu,%lu) with blockwise partition.\n",previous_D, new_D);
-            //Ptmp = Pj*prod(..)
-            for(i = pD_index; i <= D_index; i++){
-                if(i%blocksize==0){
-                    s++;
-                    mpz_init_set_ui(PP[j][s],1);
-                }
+//             printf("Multiply all primes in range of [%lu,%lu) with blockwise partition.\n",previous_D, new_D);
+//             //Ptmp = Pj*prod(..)
+//             for(i = pD_index; i <= D_index; i++){
+//                 if(i%blocksize==0){
+//                     s++;
+//                     mpz_init_set_ui(PP[j][s],1);
+//                 }
 
-                prime = PrimeList[i];
-                ind= std::ceil(pow(2,j)*lD/log2(prime));//e = logD/logp
-                mpz_ui_pow_ui(tmp,prime,ind); //tmp=p^e
-                mpz_mul(PP[j][s],PP[j][s],tmp); //P=P*tmp
-                if(i % 100000==0 or i == D_index){
-                    std::cerr<<"\r "<< i+1 << "/" <<CntPrime<<", cost = "<<(double)(clock()-start_for)/1000/1000<<'s';
-                    start_for = clock();
-                }
-            }
+//                 prime = PrimeList[i];
+//                 ind= std::ceil(pow(2,j)*lD/log2(prime));//e = logD/logp
+//                 mpz_ui_pow_ui(tmp,prime,ind); //tmp=p^e
+//                 mpz_mul(PP[j][s],PP[j][s],tmp); //P=P*tmp
+//                 if(i % 100000==0 or i == D_index){
+//                     std::cerr<<"\r "<< i+1 << "/" <<CntPrime<<", cost = "<<(double)(clock()-start_for)/1000/1000<<'s';
+//                     start_for = clock();
+//                 }
+//             }
        
-            for(int t = 0; t <= j; t++){
-                for(int ii = 0; ii < max(1,int(pow(2,j-t-1)));ii++){
-                    for(int s = 0; s < Psizes[t]; s++){
-                        mpz_powm(b,b,PP[t][s],N); //b=b^Ptmp(mod N)
-                        mpz_sub_ui(tmp,b,1);
-                        mpz_gcd(res,tmp,N);
+//             for(int t = 0; t <= j; t++){
+//                 for(int ii = 0; ii < max(1,int(pow(2,j-t-1)));ii++){
+//                     for(int s = 0; s < Psizes[t]; s++){
+//                         mpz_powm(b,b,PP[t][s],N); //b=b^Ptmp(mod N)
+//                         mpz_sub_ui(tmp,b,1);
+//                         mpz_gcd(res,tmp,N);
 
-                        if(mpz_cmp(res,N)==0){//If primes are too many, then we should narrow the set.
-                            mpz_set(b,a); // b = a
-                            for(int iter =pD_index; iter <D_index;iter++) {
-                                prime = PrimeList[iter];
-                                ind= std::ceil(pow(2,j)*lD/log2(prime));
-                                for(int e=1; e <= ind; e++){
-                                    mpz_powm_ui(b,b,prime,N);
-                                    mpz_sub_ui(tmp,b,1);
-                                    mpz_gcd(res,tmp,N);
-                                    if(mpz_cmp_ui(res,1)!=0){
-                                        print_res(N, res);
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                        else if(mpz_cmp_ui(res,1)!=0){
-                            print_res(N, res);
-                            end=clock();
-                            printf("time= %fs. \n",(double)(end-start)/1000/1000);
-                            return;
-                        }
-                        else{
-                            mpz_set(a,b);
-                        }
-                    }
-                }
-            }
-            pD_index = D_index;
-        }
+//                         if(mpz_cmp(res,N)==0){//If primes are too many, then we should narrow the set.
+//                             mpz_set(b,a); // b = a
+//                             for(int iter =pD_index; iter <D_index;iter++) {
+//                                 prime = PrimeList[iter];
+//                                 ind= std::ceil(pow(2,j)*lD/log2(prime));
+//                                 for(int e=1; e <= ind; e++){
+//                                     mpz_powm_ui(b,b,prime,N);
+//                                     mpz_sub_ui(tmp,b,1);
+//                                     mpz_gcd(res,tmp,N);
+//                                     if(mpz_cmp_ui(res,1)!=0){
+//                                         print_res(N, res);
+//                                         return;
+//                                     }
+//                                 }
+//                             }
+//                         }
+//                         else if(mpz_cmp_ui(res,1)!=0){
+//                             print_res(N, res);
+//                             end=clock();
+//                             printf("time= %fs. \n",(double)(end-start)/1000/1000);
+//                             return;
+//                         }
+//                         else{
+//                             mpz_set(a,b);
+//                         }
+//                     }
+//                 }
+//             }
+//             pD_index = D_index;
+//         }
 
-        ////改
-        p0 = PrimeList[pD_index];
+//         ////改
+//         p0 = PrimeList[pD_index];
 
-        int tmpDelta = 0;
-        for(int iter=pD_index+1; iter<CntPrime;iter++){
-            prime = PrimeList[iter];
-            if(prime > pow(D,pow(2,k))){
-                break;
-            }
-            tmpDelta = (prime - p0)/2;
-            if(tmpDelta > Delta){
-                Delta = tmpDelta;
-            }
-            p0 = prime;
-        }
+//         int tmpDelta = 0;
+//         for(int iter=pD_index+1; iter<CntPrime;iter++){
+//             prime = PrimeList[iter];
+//             if(prime > pow(D,pow(2,k))){
+//                 break;
+//             }
+//             tmpDelta = (prime - p0)/2;
+//             if(tmpDelta > Delta){
+//                 Delta = tmpDelta;
+//             }
+//             p0 = prime;
+//         }
 
-        printf("\nDelta = %d\n", Delta);
+//         printf("\nDelta = %d\n", Delta);
 
-        //Precompute a^2 ..., a^2Delta(mod N);
-        mpz_t *aList =new mpz_t[Delta];
-        for(int iter = 0; iter < Delta; iter++){
-            mpz_init(aList[iter]);
-            mpz_powm_ui(aList[iter],a,2*(iter+1),N);
+//         //Precompute a^2 ..., a^2Delta(mod N);
+//         mpz_t *aList =new mpz_t[Delta];
+//         for(int iter = 0; iter < Delta; iter++){
+//             mpz_init(aList[iter]);
+//             mpz_powm_ui(aList[iter],a,2*(iter+1),N);
             
-        }
+//         }
         
-        p0 = PrimeList[pD_index];
-        mpz_powm_ui(b,b,p0,N);
-        for(int iter=pD_index+1; iter<CntPrime;iter++){
-            prime = PrimeList[iter];
-            if(prime > pow(D,pow(2,k))){
-                break;
-            }
-            tmpDelta = (prime - p0)/2;
-            mpz_mul(b,b,aList[tmpDelta-1]);
-            // gmp_printf("\n%Zd\n",aList[tmpDelta-1]);
-            mpz_mod(b,b,N); //b=b*p^(p-p0)(mod N)
-            mpz_sub_ui(tmp,b,1);
-            mpz_gcd(res,tmp,N);
-            if(mpz_cmp_ui(res,1)!=0){
-                print_res(N, res);
-                end=clock();
-                printf("time= %fs. \n",(double)(end-start)/1000/1000);
-                return;
-            }
-            p0 = prime;
-        }
+//         p0 = PrimeList[pD_index];
+//         mpz_powm_ui(b,b,p0,N);
+//         for(int iter=pD_index+1; iter<CntPrime;iter++){
+//             prime = PrimeList[iter];
+//             if(prime > pow(D,pow(2,k))){
+//                 break;
+//             }
+//             tmpDelta = (prime - p0)/2;
+//             mpz_mul(b,b,aList[tmpDelta-1]);
+//             // gmp_printf("\n%Zd\n",aList[tmpDelta-1]);
+//             mpz_mod(b,b,N); //b=b*p^(p-p0)(mod N)
+//             mpz_sub_ui(tmp,b,1);
+//             mpz_gcd(res,tmp,N);
+//             if(mpz_cmp_ui(res,1)!=0){
+//                 print_res(N, res);
+//                 end=clock();
+//                 printf("time= %fs. \n",(double)(end-start)/1000/1000);
+//                 return;
+//             }
+//             p0 = prime;
+//         }
 
-        if(mpz_cmp_ui(res,1)==0){
-            printf("\nFail to factor N through Dynamic Scaling Pollard's P-1 Algorithm with block partition...\n");
-        }
-    }
-
-    
-    
-    end=clock();
-    printf("time= %fs. \n",(double)(end-start)/1000/1000);
+//         if(mpz_cmp_ui(res,1)==0){
+//             printf("\nFail to factor N through Dynamic Scaling Pollard's P-1 Algorithm with block partition...\n");
+//         }
+//     }
 
     
-}
+    
+//     end=clock();
+//     printf("time= %fs. \n",(double)(end-start)/1000/1000);
+
+    
+// }
 
 

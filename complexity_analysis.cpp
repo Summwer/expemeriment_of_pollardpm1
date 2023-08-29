@@ -8,7 +8,7 @@ double normal_pow_complexity(int bit_a,int bit_pow){
 }
 
 //fast multiplication complexity
-// pair<double,double> FM_complexiy(int bit){
+// pair<double,double> FM_complexity(int bit){
 //     return (double)bit*log2(bit);
 // }
 
@@ -31,7 +31,15 @@ void gen_indices_and_bitsizes(vector<long long> &indices, vector<long long> &bit
 }
 
 
-pair<double,long long> FMP_complexiy(int n1, int n2, bool verbose){
+double prob_prime(int i){
+    return max(0.,min(1./((double)i*log(2.)),1.));
+}
+
+double prob1(int i){
+    return 1.;
+}
+
+pair<double,long long> FM_complexity(int n1, int n2, double (*pr)(int)){ //, bool verbose
     /*_summary_
 
     Args:
@@ -57,7 +65,7 @@ pair<double,long long> FMP_complexiy(int n1, int n2, bool verbose){
     //bitsizes_num[0] is the amount of 1, since 1*a = a, so let the bitsize of 1 become 0 to avoid the increasement of bit size after product
     for(int i = n1; i < n2+1; i++){
         // bitsizes_num[i] = pow(2,(i-1));
-        bitsizes_num[i] = round(max(0.,min(1./((double)i*log(2.)),1.)) * pow(2,(i-1)));
+        bitsizes_num[i] = round((*pr)(i) * pow(2,(i-1)));
         amount += bitsizes_num[i];
     }
     // print_map(bitsizes_num);
@@ -93,8 +101,8 @@ pair<double,long long> FMP_complexiy(int n1, int n2, bool verbose){
 		it != bitsizes_num.end(); it++) {
         bitsize = it->first;
     }
-    if(verbose)
-        printf("FMP time cost = %3.7f from bit size of %d to %d, get bit size with %3lld \n", T, n1, n2, bitsize);
+    // if(verbose)
+    //     printf("FMP time cost = %3.7f from bit size of %d to %d, get bit size with %3lld \n", T, n1, n2, bitsize);
 
     return make_pair(T, bitsize);
 }
@@ -117,7 +125,7 @@ double slide_window_MP_cost(int bit_a, long long bit_pow){
     double cost;
     long long mink;
     for(long long k =1; k<=L;k++){
-        cost = pow(2,k-1)+L+ceil(L/k)+2;
+        cost = pow(2,k-1)-1+ceil((L-1)/(double)(k+1));
         if(mincost == -1 or mincost > cost){
             mincost = cost;
             mink = k;
@@ -135,29 +143,32 @@ double GCD_cost(long long n){
     return (double) pow(n,2);
 }
 
+
 //cost of a multiplication 
 double M_cost(long long n){
     return (double) n*log2((double) n);
 }
 
-
-double som22_complexity(int bit_N, int pt, int umax){
+double som22_complexity(int bit_N, long long pt, int umax){
     int bit_pt = floor(log2(pt))+1;
-    pair<double,long long> FMP_cost = FMP_complexiy(1, bit_pt);
+    pair<double,long long> FMP_cost = FM_complexity(1, bit_pt,prob_prime);
     // cout<<umax * GCD_cost(bit_N) <<","<<umax * slide_window_MP_cost(bit_N,FMP_cost.second)<<endl;
+    cout<<"FMP_cost = "<<FMP_cost.first<<", GCD_cost = "<<GCD_cost(bit_N)<<", MP_cost = "<<slide_window_MP_cost(bit_N,FMP_cost.second)<<endl;
+
     return  FMP_cost.first + (double) umax * GCD_cost(bit_N) + (double) umax * slide_window_MP_cost(bit_N,FMP_cost.second);
 }
 
-double dynamic_scaling_pollard_pm1_complexity(int bit_N, int pt,int px, int ux){
+
+double dynamic_scaling_pollard_pm1_complexity(int bit_N, long long pt,long long px, int ux){
     double T = 0;
     int k0 = ceil(log2(ux*log2(px))), bit_pt = floor(log2(pt))+1;
     long long bit_Pj1 = 1;
     pair<double,long long> Pj2_cost = make_pair(0,0);
     for(int j=1; j < k0+1; j++){
         if(pt >= pow(2,pow(2,j)))
-            Pj2_cost = FMP_complexiy(pow(2,(j-1)), pow(2,j));
+            Pj2_cost = FM_complexity(pow(2,(j-1)), pow(2,j), prob_prime);
         else if(pt > pow(2,pow(2,(j-1))) and pt < pow(2,pow(2,j)))
-            Pj2_cost = FMP_complexiy(pow(2,(j-1)), bit_pt);
+            Pj2_cost = FM_complexity(pow(2,(j-1)), bit_pt, prob_prime);
         else
             Pj2_cost = make_pair(0,0);
         // cout<<T<<endl;
@@ -167,20 +178,20 @@ double dynamic_scaling_pollard_pm1_complexity(int bit_N, int pt,int px, int ux){
         bit_Pj1 += bit_Pj;
         T += M_cost(bit_Pj1) + M_cost(bit_Pj) + slide_window_MP_cost(bit_N, bit_Pj) + GCD_cost(bit_N);
         // printf("M_cost_Pj1 = %3.7f, M_cost_Pj = %3.7f, \n", M_cost(bit_Pj1),M_cost(bit_Pj));
-
     }
     return T;
 }
 
 
 
-void complexity_test(int bit_N, int pt , int umax, int px, int ux){
+pair<double,double> complexity_test(int bit_N, long long pt , int umax, long long px, int ux){
    double T1 = som22_complexity(bit_N, pt, umax);
    double T2 = dynamic_scaling_pollard_pm1_complexity(bit_N, pt, px, ux);
-   printf("bit(N) = %d, pt = %d, umax = %d, px = %d, ux = %d\n", bit_N, pt, umax, px, ux);
+   printf("bit(N) = %d, pt = %lld, umax = %d, px = %lld, ux = %d\n", bit_N, pt, umax, px, ux);
    printf("Cost for Som22: %e operations\n", T1);
    printf("Cost for dynamic scaling pollard P-1: %e operations\n", T2);
    printf("Ratio = %3.7f\n", T1/T2);
+   return make_pair(T1,T2);
 }
 
 

@@ -18,7 +18,7 @@ void pollard_pm1_improved_IPP1_V2(mpz_t N, int bits, ll MaxInt, bool fm, bool ve
 
 
 
-void generate_partial_primes(vector<Z_NR<mpz_t>> Primes, int k, vector<vector<Z_NR<mpz_t>>> &Partial_Primes);
+void generate_partial_primes(vector<Z_NR<mpz_t>> &Primes, int k, vector<vector<Z_NR<mpz_t>>> &Partial_Primes);
 void dynamic_scaling_pollard_pm1(mpz_t N, int bit_N, ll MaxInt,bool fm, bool verbose);
 // void dynamic_scaling_pollard_pm12(mpz_t N, int bit_N, ll MaxInt,bool fm, bool verbose);
 
