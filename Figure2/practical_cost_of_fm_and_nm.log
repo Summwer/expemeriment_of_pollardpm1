@@ -1,0 +1,18 @@
+Generate prime list from 2 to 2097152 ( amount: 155611), cost = 0.007522 s
+max_bit_size = 21.normal_mul: time= 1.516422s. 
+fast_mul: time= 0.038154s. 
+Generate prime list from 2 to 4194304 ( amount: 295947), cost = 0.011353 s
+max_bit_size = 22.normal_mul: time= 6.015472s. 
+fast_mul: time= 0.085067s. 
+Generate prime list from 2 to 8388608 ( amount: 564163), cost = 0.026469 s
+max_bit_size = 23.normal_mul: time= 23.260777s. 
+fast_mul: time= 0.196792s. 
+Generate prime list from 2 to 16777216 ( amount: 1077871), cost = 0.079935 s
+max_bit_size = 24.normal_mul: time= 88.865449s. 
+fast_mul: time= 0.421726s. 
+Generate prime list from 2 to 33554432 ( amount: 2063689), cost = 0.205020 s
+max_bit_size = 25.normal_mul: time= 349.317693s. 
+fast_mul: time= 0.857552s. 
+Generate prime list from 2 to 67108864 ( amount: 3957809), cost = 0.501028 s
+max_bit_size = 26.normal_mul: time= 1592.414569s. 
+fast_mul: time= 2.055084s.

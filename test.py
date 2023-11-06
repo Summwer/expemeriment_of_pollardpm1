@@ -92,7 +92,7 @@ def MP_cost(n):
     w = 2*lambertw(sqrt((n-1)*log(2)))/log(2)-1
     return 2**(w-1) - 1 + (n-1)/(w+1)
 
-def som22_complexity(bit_N, pt, umax):
+def IPP1v2_complexity(bit_N, pt, umax):
     bit_pt = floor(log2(pt))+1
     print(bit_pt)
     T_FMP, bitsize_FMP = FMP_cost_n1_n2(1, bit_pt, prime_prob)
@@ -138,7 +138,7 @@ pt = 2**31
 umax = 110
 px = 3
 ux = 110
-T1 = som22_complexity(bit_N, pt, umax)
+T1 = IPP1v2_complexity(bit_N, pt, umax)
 # T2 = dynamic_scaling_pollard_pm1_complexity(bit_N, pt, px, ux)
 
 # print(float(T1)/float(T2))

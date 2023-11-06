@@ -39,7 +39,7 @@ double prob1(int i){
     return 1.;
 }
 
-pair<double,long long> FM_complexity(int n1, int n2, double (*pr)(int)){ //, bool verbose
+pair<double,long long> FM_complexity(int n1, int n2, double (*pr)(int), bool verbose, double C1){
     /*_summary_
 
     Args:
@@ -101,10 +101,9 @@ pair<double,long long> FM_complexity(int n1, int n2, double (*pr)(int)){ //, boo
 		it != bitsizes_num.end(); it++) {
         bitsize = it->first;
     }
-    // if(verbose)
-    //     printf("FMP time cost = %3.7f from bit size of %d to %d, get bit size with %3lld \n", T, n1, n2, bitsize);
-
-    return make_pair(T, bitsize);
+    if(verbose)
+        printf("FMP time cost = %3.7f from bit size of %d to %d, get bit size with %3lld \n", T, n1, n2, bitsize);
+    return make_pair(C1*T, bitsize);
 }
 
 
@@ -117,7 +116,7 @@ double gen_prime_list_complexity(int B){
 //返回slide window模幂算法的时间复杂度
 //选择最优的窗口
 //输入：指数e的比特数, 底数A的比特数
-double slide_window_MP_cost(int bit_a, long long bit_pow){
+double slide_window_MP_cost( int bit_a, long long bit_pow, double C1 ){
 
     long long L = bit_pow;
 
@@ -125,22 +124,22 @@ double slide_window_MP_cost(int bit_a, long long bit_pow){
     double cost;
     long long mink;
     for(long long k =1; k<=L;k++){
-        cost = pow(2,k-1)-1+ceil((L-1)/(double)(k+1));
+        cost = pow(2,k-1)-1+(L-1)/(double)(k+1);
         if(mincost == -1 or mincost > cost){
             mincost = cost;
             mink = k;
         }
     }
-    
-    mincost = mincost * bit_a * log2(bit_a);
+    // cout<<"mincost = "<<mincost<<endl;
+    mincost = mincost * C1 * bit_a * log2(bit_a);
 
     return mincost;
 }
 
 
 //cost of gcd
-double GCD_cost(long long n){
-    return (double) pow(n,2);
+double GCD_cost(long long n, double C2){
+    return (double) C2*pow(n,2);
 }
 
 
@@ -149,11 +148,13 @@ double M_cost(long long n){
     return (double) n*log2((double) n);
 }
 
-double som22_complexity(int bit_N, long long pt, int umax){
+double IPP1v2_complexity(int bit_N, long long pt, int umax){
     int bit_pt = floor(log2(pt))+1;
     pair<double,long long> FMP_cost = FM_complexity(1, bit_pt,prob_prime);
     // cout<<umax * GCD_cost(bit_N) <<","<<umax * slide_window_MP_cost(bit_N,FMP_cost.second)<<endl;
-    cout<<"FMP_cost = "<<FMP_cost.first<<", GCD_cost = "<<GCD_cost(bit_N)<<", MP_cost = "<<slide_window_MP_cost(bit_N,FMP_cost.second)<<endl;
+    // cout<<endl;
+    // cout<<"FMP_cost = "<<FMP_cost.first<<", GCD_cost = "<<GCD_cost(bit_N)<<", MP_cost = "<<slide_window_MP_cost(bit_N,FMP_cost.second)<<", pt = "<< FMP_cost.second<<endl;
+    // cout<<"============="<<endl;
 
     return  FMP_cost.first + (double) umax * GCD_cost(bit_N) + (double) umax * slide_window_MP_cost(bit_N,FMP_cost.second);
 }
@@ -185,10 +186,10 @@ double dynamic_scaling_pollard_pm1_complexity(int bit_N, long long pt,long long 
 
 
 pair<double,double> complexity_test(int bit_N, long long pt , int umax, long long px, int ux){
-   double T1 = som22_complexity(bit_N, pt, umax);
+   double T1 = IPP1v2_complexity(bit_N, pt, umax);
    double T2 = dynamic_scaling_pollard_pm1_complexity(bit_N, pt, px, ux);
    printf("bit(N) = %d, pt = %lld, umax = %d, px = %lld, ux = %d\n", bit_N, pt, umax, px, ux);
-   printf("Cost for Som22: %e operations\n", T1);
+   printf("Cost for IPP1v2: %e operations\n", T1);
    printf("Cost for dynamic scaling pollard P-1: %e operations\n", T2);
    printf("Ratio = %3.7f\n", T1/T2);
    return make_pair(T1,T2);

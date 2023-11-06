@@ -1,0 +1,27 @@
+bit(N) = 1024, pt = 1073741789, umax = 1, px = 1073741789, ux = 1
+Cost for IPP1v2: 5.343565e+11 operations
+Cost for dynamic scaling pollard P-1: 6.290059e+11 operations
+Ratio = 0.8495253
+bit(N) = 1024, pt = 1073741789, umax = 20, px = 3, ux = 20
+Cost for IPP1v2: 7.221334e+12 operations
+Cost for dynamic scaling pollard P-1: 6.290059e+11 operations
+Ratio = 11.4805501
+bit(N) = 1024, pt = 1073741789, umax = 40, px = 3, ux = 40
+Cost for IPP1v2: 1.426026e+13 operations
+Cost for dynamic scaling pollard P-1: 1.125969e+12 operations
+Ratio = 12.6648702
+bit(N) = 1024, pt = 1073741789, umax = 60, px = 3, ux = 60
+Cost for IPP1v2: 2.129918e+13 operations
+Cost for dynamic scaling pollard P-1: 2.102751e+12 operations
+Ratio = 10.1291961
+bit(N) = 1024, pt = 1073741789, umax = 80, px = 3, ux = 80
+Cost for IPP1v2: 2.833810e+13 operations
+Cost for dynamic scaling pollard P-1: 2.102751e+12 operations
+Ratio = 13.4766787
+bit(N) = 1024, pt = 1073741789, umax = 100, px = 3, ux = 100
+Cost for IPP1v2: 3.537703e+13 operations
+Cost for dynamic scaling pollard P-1: 4.026093e+12 operations
+Ratio = 8.7869381
+u range:[0, 120 ].
+IPP1v2Ts from estimator: [5.34356e+11 7.22133e+12 1.42603e+13 2.12992e+13 2.83381e+13 3.5377e+13 ]
+DSPTs from estimator: [6.29006e+11 6.29006e+11 1.12597e+12 2.10275e+12 2.10275e+12 4.02609e+12 ]

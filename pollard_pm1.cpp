@@ -164,6 +164,11 @@ void pollard_pm1_Pol74(mpz_t N, int bits, ll L, ll M, bool verbose){
             if(mpz_cmp_ui(res,1)!=0){
                 print_res(N, res);
                 cout<<endl;
+                delete [] PrimeList;
+                mpz_clear(a);
+                mpz_clear(b);
+                mpz_clear(P);
+                mpz_clear(res);
                 return;
             }
         }
@@ -220,6 +225,11 @@ void pollard_pm1_Pol74(mpz_t N, int bits, ll L, ll M, bool verbose){
                 if(mpz_cmp_ui(res,1)!=0){
                     print_res(N, res);
                     delete [] aList;
+                    delete [] PrimeList;
+                    mpz_clear(a);
+                    mpz_clear(b);
+                    mpz_clear(P);
+                    mpz_clear(res);
                     return;
                 }
                 p0 = prime;
@@ -230,50 +240,60 @@ void pollard_pm1_Pol74(mpz_t N, int bits, ll L, ll M, bool verbose){
     }
     else{
         print_res(N, res);
+        delete [] PrimeList;
+        mpz_clear(a);
+        mpz_clear(b);
+        mpz_clear(P);
+        mpz_clear(res);
         return;
     }
+    delete [] PrimeList;
+    mpz_clear(a);
+    mpz_clear(b);
+    mpz_clear(P);
+    mpz_clear(res);
     printf("\nFail to factor N.\n");
 }
 
 
 
 
-void pollard_pm1_ref26(mpz_t N, int bits, ll &CntPrime,ll PrimeList[]){
-    printf("=====================================\n");
-    printf("Test pollard p-1 method in [26]...\n");
-    mpz_t a,P,tmp,res,q;
+// void pollard_pm1_ref26(mpz_t N, int bits, ll &CntPrime,ll PrimeList[]){
+//     printf("=====================================\n");
+//     printf("Test pollard p-1 method in [26]...\n");
+//     mpz_t a,P,tmp,res,q;
     
-    mpz_inits(a, P, res, tmp, q);
+//     mpz_inits(a, P, res, tmp, q);
     
     
-    gmp_randstate_t grt;
-    gmp_randinit_default(grt);
+//     gmp_randstate_t grt;
+//     gmp_randinit_default(grt);
 
-    int prime; 
-    int ind;
-    do{
-        gmp_randseed_ui(grt, clock());
-        mpz_urandomb(a, grt, bits); //Generate a random int from 0 to 2^x-1
+//     int prime; 
+//     int ind;
+//     do{
+//         gmp_randseed_ui(grt, clock());
+//         mpz_urandomb(a, grt, bits); //Generate a random int from 0 to 2^x-1
 
-        for (int i =0;i<CntPrime;i++) {
-            prime = PrimeList[i];
-            ind= std::ceil(log2(PrimeList[CntPrime-1])/log2(prime));//e = logB/logp
-            mpz_ui_pow_ui(P,prime,ind); //P=p^e
-            mpz_powm(a,a,P,N); //a=a^P(mod N)
-            mpz_sub_ui(tmp,a,1);
-            mpz_gcd(res,tmp,N);
-        }
-    }
-    while( (mpz_cmp_ui(res,1)==0 or mpz_cmp(res,N)==0 ));
+//         for (int i =0;i<CntPrime;i++) {
+//             prime = PrimeList[i];
+//             ind= std::ceil(log2(PrimeList[CntPrime-1])/log2(prime));//e = logB/logp
+//             mpz_ui_pow_ui(P,prime,ind); //P=p^e
+//             mpz_powm(a,a,P,N); //a=a^P(mod N)
+//             mpz_sub_ui(tmp,a,1);
+//             mpz_gcd(res,tmp,N);
+//         }
+//     }
+//     while( (mpz_cmp_ui(res,1)==0 or mpz_cmp(res,N)==0 ));
     
-    if((mpz_cmp_ui(res,1)!=0 and mpz_cmp(res,N)!=0 )){
-        print_res(N,res);
-        return;
-    }
+//     if((mpz_cmp_ui(res,1)!=0 and mpz_cmp(res,N)!=0 )){
+//         print_res(N,res);
+//         return;
+//     }
     
-    printf("\nFail to factor N through method [26].\n");
+//     printf("\nFail to factor N through method [26].\n");
     
-}
+// }
 
 
 
@@ -310,12 +330,17 @@ void pollard_pm1_Bis03(mpz_t N, int bits,bool verbose){
     
     if((mpz_cmp_ui(res,1)!=0 and mpz_cmp(res,N)!=0 )){
         print_res(N,res);
+        mpz_clear(a);
+        mpz_clear(P);
+        mpz_clear(res);
         return;
     }
     if(mpz_cmp(res,N) == 0)
         printf("\ngcd(d,N) = N!!");
     printf("\nFail to factor N.\n");
-
+    mpz_clear(a);
+    mpz_clear(P);
+    mpz_clear(res);
 }
 
 void pollard_pm1_IPP1_V1(mpz_t N, int bits,ll &CntPrime,ll PrimeList[]){
@@ -368,7 +393,9 @@ void pollard_pm1_IPP1_V1(mpz_t N, int bits,ll &CntPrime,ll PrimeList[]){
     end=clock();
     printf("time= %fs. \n",(double)(end-start)/1000/1000);
 
-
+    mpz_clear(a);
+    mpz_clear(P);
+    mpz_clear(res);
 }
 
 
@@ -446,10 +473,10 @@ void pollard_pm1_IPP1_V2(mpz_t N, int bits,ll &CntPrime,ll PrimeList[]){
 
 
 
-//som22
+//IPP1v2
 void pollard_pm1_improved_IPP1_V2(mpz_t N, int bits, ll MaxInt, bool fm, bool verbose){
     printf("=====================================\n");
-    printf("[Som22]Test pollard p-1 method improved IPP1_V2...\n");
+    printf("[IPP1v2]Test pollard p-1 method improved IPP1_V2...\n");
 
     
     ll PrimeListLen=MaxInt/2+1, CntPrime; 
@@ -461,7 +488,6 @@ void pollard_pm1_improved_IPP1_V2(mpz_t N, int bits, ll MaxInt, bool fm, bool ve
     for(int i = 0; i < CntPrime; i++){
         Primes[i] = PrimeList[i];
     }
-    delete [] PrimeList;
 
 
     mpz_t a,P,tmp,res,q;
@@ -507,6 +533,7 @@ Narrow_prime_set:
 
     if((mpz_cmp_ui(res,1)!=0 and mpz_cmp(res,N)!=0 )){
         print_res(N,res);
+        delete [] PrimeList;
         return;
     }
     else if(mpz_cmp_ui(res,1)==0 ){
@@ -528,9 +555,10 @@ Narrow_prime_set:
             cerr<<endl;
         if((mpz_cmp_ui(res,1)!=0 and mpz_cmp(res,N)!=0 )){
             print_res(N,res);
+            delete [] PrimeList;
             return;
         }if(mpz_cmp(res,N)==0){
-            cout<<"In last step of  [Som22], gcd(d,N) = N unfortunately."<<endl;
+            cout<<"In last step of  [IPP1v2], gcd(d,N) = N unfortunately."<<endl;
         }
         
     }
@@ -539,9 +567,7 @@ Narrow_prime_set:
         goto Narrow_prime_set;
     }
     printf("\nFail to factor N through method improved IPP1_V2.\n");
-
-
-
+    delete [] PrimeList;
 }
 
 
@@ -554,7 +580,7 @@ void generate_partial_primes(vector<Z_NR<mpz_t>> &Primes, int k, vector<vector<Z
     Partial_Primes[0][0] = 2;
     for(int j = 1; j <= k; j++){
         double D1 = pow(2,pow(2,j-1)), D2 = pow(2,pow(2,j));
-        cerr<< "D1 = " << D1 << ", D2 = " << D2 <<endl;
+        cerr<<j << "/" << k << ": D1 = " << D1 << ", D2 = " << D2 <<endl;
         Partial_Primes[j].resize(0);
         for(i = 0; i < Primes.size(); i++){
             if(Primes[i] > D2){
