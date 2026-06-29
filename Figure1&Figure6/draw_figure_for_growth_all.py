@@ -15,7 +15,7 @@ fig, ax = plt.subplots(figsize=(10, 6),dpi=1000)
 
 
 def theo_DSP_cost(bitN, px, ux, pt, C1, C2):
-    return log2(ux * log2(px))* C2 * bitN**2 + C1*pt*(1/2. * (log2(pt)**2) - log2(pt)+ux*log2(px)+2 )+C1*pt*(ux*log2(px))/log2(pt)*bitN*log2(bitN)
+    return log2(ux * log2(px))* C2 * bitN**2 + C1*pt*(1/4. * (log2(pt)**2) - log2(pt)+ux*log2(px)+ 1)+C1*pt*(2*ux*log2(px))/log2(pt)*bitN*log2(bitN)
 
 
 def theo_som22_cost(bitN, px, ux, pt, umax, C1, C2):
