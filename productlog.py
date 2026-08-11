@@ -34,9 +34,9 @@ def fw(w,l):
 
 #picture of w
 
-max_num = int(1.2e9)
-start = int(1e7)
-gap = int(1e7)
+max_num = int(1e6)
+start = int(1e1)
+gap = int(1e1)
 ls = [_ for _ in range(start,max_num,gap)]
 ws = []
 intws = []
@@ -90,14 +90,18 @@ with plt.style.context(['science','ieee']):
     
     
     R = compute_R2(fws,y1)
-    plt.plot(x1, y1, color="blue", linestyle="--", label=" y = %1.3e $l^2$ + %1.3e$l$ + %3.3f, $R^2$ = %3.4f" %(A1,B1,C1,R))
+    plt.plot(x1, y1, color="blue", linestyle="--", label=" y = %1.1e $l^2$ + %.2f$l$ + %3.2f, $R^2$ = %3.4f" %(A1,B1,C1,R))
     
     
-    plt.title("Modular Powering Cost (in theory) -- bitsize")
+    # plt.title("Modular Powering Cost (in theory) -- bitsize")
     
     ax.legend()
     ax.set(xlabel=r'$l$')
     ax.set(ylabel='$f(w(l))_{\min}$')
+    
+    ax.ticklabel_format(style='sci', axis='both', scilimits=(0, 0))
+    ax.xaxis.get_major_formatter().set_useMathText(True)
+    ax.yaxis.get_major_formatter().set_useMathText(True)
     
     fig.savefig(r'fw_theo.png')
     
